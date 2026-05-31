@@ -103,11 +103,8 @@ main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 22p
 .hero-card{
   background:linear-gradient(180deg,#ffffff, #f6faff);
   border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
-  max-width:560px;margin:18px auto 0;padding:42px 34px;text-align:center;position:relative;overflow:hidden
+  max-width:560px;margin:42px auto 0;padding:42px 34px;text-align:center;position:relative;overflow:hidden
 }
-.scroll-cue{display:flex;flex-direction:column;align-items:center;gap:0;width:max-content;margin:40px auto 0;color:var(--blue);cursor:pointer;font-weight:600;font-size:.84rem;animation:bob 1.8s ease-in-out infinite}
-.scroll-cue .chev{font-size:1.7rem;line-height:.5;margin-top:2px}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(9px)}}
 .hero-card::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(56,189,248,.10),transparent);transform:translateX(-100%);animation:sheen 5s infinite}
 @keyframes sheen{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
 .hero-card .badge-ring{
@@ -252,21 +249,6 @@ main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 22p
 .assign-box .nm{font-weight:700}
 .assign-box .sk{font-size:.8rem;color:var(--slate)}
 .d-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-.roadmap{margin-top:18px;background:linear-gradient(135deg,#eef6ff,#f3f0ff);border:1px solid #dbeafe;border-radius:16px;padding:18px 18px 16px;position:relative;overflow:hidden}
-.roadmap::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--blue),var(--sky))}
-.rm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:1rem;color:var(--ink)}
-.rm-tag{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px}
-.rm-tag.rm-high{background:#ffe4e6;color:#be123c}
-.rm-tag.rm-med{background:#fef3c7;color:#b45309}
-.rm-tag.rm-low{background:#dcfce7;color:#15803d}
-.rm-approach{font-size:.9rem;color:#384b6e;margin:12px 0 4px;line-height:1.55}
-.rm-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--blue);margin:12px 0 8px}
-.rm-steps{margin:0;padding-left:0;list-style:none;counter-reset:rm}
-.rm-steps li{counter-increment:rm;position:relative;padding:9px 12px 9px 42px;background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;font-size:.9rem;line-height:1.5;color:#384b6e;animation:rmIn .4s ease backwards}
-.rm-steps li::before{content:counter(rm);position:absolute;left:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:linear-gradient(120deg,var(--blue),var(--sky));color:#fff;font-weight:700;font-size:.78rem;display:flex;align-items:center;justify-content:center}
-.rm-steps li:nth-child(1){animation-delay:.04s}.rm-steps li:nth-child(2){animation-delay:.1s}.rm-steps li:nth-child(3){animation-delay:.16s}.rm-steps li:nth-child(4){animation-delay:.22s}.rm-steps li:nth-child(5){animation-delay:.28s}
-@keyframes rmIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
-.rm-foot{font-size:.8rem;color:#7c8aa6;margin-top:6px}
 
 /* OFFICER PROFILE */
 .profile-hero{background:linear-gradient(120deg,var(--blue),var(--sky));border-radius:22px;padding:30px;color:#fff;display:flex;align-items:center;gap:22px;box-shadow:var(--shadow);margin-bottom:22px;position:relative;overflow:hidden}
@@ -367,10 +349,6 @@ footer{position:relative;z-index:1;background:#0f1f3d;color:#cdd9f0;margin-top:4
     <span class="eyebrow"><span class="dot"></span> AI in Law Enforcement · Learning Demo</span>
     <h1>Smarter Policing with <span class="grad">Artificial Intelligence</span></h1>
     <p>See how a modern police department uses AI to read citizen complaints, decide their priority, sort them by area, and route each case to the right officer — automatically.</p>
-    <div class="scroll-cue" onclick="document.querySelector('#landing .hero-card').scrollIntoView({behavior:'smooth',block:'center'})">
-      <span>Get started below</span>
-      <span class="chev">⌄</span>
-    </div>
   </div>
 
   <div class="hero-card">
@@ -611,87 +589,6 @@ function classify(subject, desc){
   return {category, categoryLabel, priority, officer};
 }
 
-/* ============ AI CASE ROADMAP (officer guidance) ============ */
-// Step-by-step "how to solve / how to proceed" generated from the case category & priority.
-const ROADMAPS = {
-  Cybercrime:{approach:"Treat this as a digital-evidence case — secure the trail before it disappears.",steps:[
-    "Preserve evidence: screenshots, suspicious URLs, sender IDs, and transaction/UPI reference numbers.",
-    "Coordinate with the bank's nodal officer to freeze the beneficiary account immediately.",
-    "Send a preservation notice to the platform/intermediary for login & IP logs.",
-    "Trace the device/IP with the cyber cell and map the money trail.",
-    "Advise the complainant to reset passwords and enable 2FA; file under the IT Act."]},
-  Theft:{approach:"Recover property fast and build a recovery trail.",steps:[
-    "Visit the scene, record the statement and a valued list of stolen items.",
-    "Collect CCTV footage from all cameras within ~500m of the spot.",
-    "Circulate stolen-item details (IMEI / vehicle number) to pawn shops & resale platforms.",
-    "Check informer network and known offenders operating in the area.",
-    "Register the FIR and keep the complainant updated on recovery."]},
-  Traffic:{approach:"Stabilise the scene first, then establish liability.",steps:[
-    "Ensure medical aid to the victim and secure the accident scene.",
-    "Photograph vehicle positions, skid marks, debris and damage.",
-    "For hit-and-run: pull junction CCTV and toll/ANPR data to trace the vehicle.",
-    "Record witness and complainant statements.",
-    "Register under the MV Act / relevant IPC and coordinate with the hospital."]},
-  Domestic:{approach:"Safety of the complainant comes before everything else.",steps:[
-    "Speak to the complainant privately and assess immediate danger.",
-    "Connect them to the women's help desk / counsellor and note any injuries.",
-    "Record a detailed statement including any history of abuse.",
-    "Issue notice to the accused and evaluate need for a protection order.",
-    "Proceed under the DV Act / dowry provisions and schedule a follow-up."]},
-  Narcotics:{approach:"Verify quietly, then act decisively with proper seizure procedure.",steps:[
-    "Confirm the tip through discreet surveillance — note timings and persons.",
-    "Plan the raid with independent panch witnesses and a seizure kit.",
-    "Seize, weigh and seal samples; send to FSL with proper labelling.",
-    "Record the arrest and interrogate to map the supply chain.",
-    "Book under the NDPS Act and protect the informant's identity."]},
-  Fraud:{approach:"Speed matters — chase the money before it is layered away.",steps:[
-    "List every transaction, amount and account involved.",
-    "Request urgent freeze of beneficiary/mule accounts via the bank nodal officer.",
-    "Collect chat/call/SMS evidence of the inducement.",
-    "Trace the money trail across accounts and wallets.",
-    "Register the case and issue a public advisory on the modus operandi."]},
-  PublicDisturbance:{approach:"De-escalate first; enforce only if it repeats.",steps:[
-    "Visit the location and assess the nature and timing of the disturbance.",
-    "Issue a documented verbal warning to those responsible.",
-    "Verify permissions (loudspeaker/event) with the local body.",
-    "On repeat, serve notice under public-nuisance provisions.",
-    "Mediate between parties and record the resolution."]},
-  Missing:{approach:"Time-critical — flood the search net in the first hours.",steps:[
-    "Record full description, last-seen location, time and a recent photo.",
-    "Immediately circulate an alert to all stations, checkposts and patrols.",
-    "Pull CCTV on likely routes, bus stands and railway stations.",
-    "Contact relatives, friends, school/workplace and recent contacts.",
-    "Register as missing; escalate to kidnapping if foul play is suspected."]},
-  Assault:{approach:"Medical care and evidence preservation run in parallel.",steps:[
-    "Ensure medical aid and obtain the medico-legal (MLC) report.",
-    "Photograph injuries and secure the weapon and scene.",
-    "Record victim and eyewitness statements promptly.",
-    "Identify and apprehend the accused; assess ongoing threat.",
-    "Register the FIR under the relevant IPC sections."]},
-  Property:{approach:"Keep the peace; sort facts with documents and revenue staff.",steps:[
-    "Obtain ownership/title documents from both parties.",
-    "Conduct a joint site inspection with revenue/survey officials.",
-    "Record statements and check for any existing court stay order.",
-    "Prevent any breach of peace at the site.",
-    "Coordinate boundary demarcation; advise civil remedy where it applies."]},
-};
-function caseRoadmap(c){
-  const rm = ROADMAPS[c.category] || ROADMAPS.PublicDisturbance;
-  const pr = c.priority==='High'
-      ? {cls:'rm-high', txt:'⏱ HIGH priority — act within the first hours.'}
-      : c.priority==='Medium'
-      ? {cls:'rm-med', txt:'Plan action within 24 hours.'}
-      : {cls:'rm-low', txt:'Handle in routine order.'};
-  const steps = rm.steps.map(s=>`<li>${s}</li>`).join('');
-  return `<div class="roadmap">
-    <div class="rm-top">🤖 <b>AI Action Roadmap</b><span class="rm-tag ${pr.cls}">${pr.txt}</span></div>
-    <div class="rm-approach"><b>Approach:</b> ${rm.approach}</div>
-    <div class="rm-label">Recommended steps to proceed</div>
-    <ol class="rm-steps">${steps}</ol>
-    <div class="rm-foot">When the case is resolved, mark it solved below — it updates the Admin dashboard instantly.</div>
-  </div>`;
-}
-
 /* ============ STORAGE ============ */
 const KEY = "cspd_complaints_v1";
 function loadComplaints(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
@@ -886,7 +783,6 @@ function openCase(id, ctx){
     <div class="d-cell" style="margin-bottom:14px"><div class="k">Description (as sent by citizen)</div></div>
     <div class="d-desc">${esc(c.desc)}</div>
     ${c.photo?`<img class="d-photo" src="${c.photo}" alt="evidence">`:`<p style="color:#9aa9c4;font-size:.85rem;margin-top:12px">📷 No photo attached.</p>`}
-    ${ctx==='officer' ? caseRoadmap(c) : ''}
     <div class="d-actions">
       ${c.status==='Solved'
         ? `<button class="btn btn-soft" onclick="setStatus(${c.id},'Pending')">↩ Reopen Case</button>`
