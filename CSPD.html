@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSPD · AI-Powered Policing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#2563eb;
+  --blue-soft:#3b82f6;
+  --sky:#38bdf8;
+  --ink:#0f1f3d;
+  --slate:#5b6b8c;
+  --bg1:#eef4ff;
+  --bg2:#e6fbff;
+  --bg3:#fdf2ff;
+  --card:#ffffff;
+  --line:#e3ebf7;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --rose:#f43f5e;
+  --shadow:0 18px 40px -18px rgba(37,99,235,.35);
+  --shadow-sm:0 8px 24px -12px rgba(37,99,235,.28);
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 600px at 8% -5%, var(--bg2), transparent 55%),
+    radial-gradient(900px 700px at 100% 0%, var(--bg3), transparent 55%),
+    linear-gradient(180deg,var(--bg1),#ffffff 60%);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4,.brand{font-family:'Sora',sans-serif}
+
+/* floating ambient blobs */
+.blob{position:fixed;border-radius:50%;filter:blur(60px);opacity:.45;z-index:0;pointer-events:none;animation:float 18s ease-in-out infinite}
+.blob.b1{width:380px;height:380px;background:#bfdbfe;top:-80px;left:-60px}
+.blob.b2{width:320px;height:320px;background:#baf5ff;bottom:-60px;right:-40px;animation-delay:-6s}
+.blob.b3{width:260px;height:260px;background:#fbd6ff;top:40%;right:18%;animation-delay:-11s}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-30px)}}
+
+/* NAVBAR */
+nav{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.nav-left{display:flex;align-items:center;gap:12px;cursor:pointer}
+.nav-left .cspd{
+  font-family:'Sora';font-weight:800;font-size:1.55rem;letter-spacing:.5px;
+  background:linear-gradient(120deg,var(--blue),var(--sky));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.nav-left .by{color:var(--slate);font-weight:500;font-size:.95rem}
+.logo-link{display:flex;align-items:center;transition:transform .25s ease}
+.logo-link:hover{transform:scale(1.07)}
+.logo-link img{height:34px;width:auto;display:block;border-radius:8px}
+.logo-fallback{
+  height:34px;padding:0 14px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(120deg,#0ea5e9,#6366f1);color:#fff;border-radius:9px;
+  font-family:'Sora';font-weight:700;font-size:.85rem;letter-spacing:.5px;
+}
+.nav-right{display:flex;gap:8px;align-items:center}
+.nav-pill{
+  font-size:.82rem;font-weight:600;color:var(--blue);
+  background:#eff5ff;border:1px solid var(--line);padding:7px 14px;border-radius:999px;
+  cursor:pointer;transition:.2s
+}
+.nav-pill:hover{background:var(--blue);color:#fff}
+.nav-pill.danger{color:var(--rose);background:#fff1f2;border-color:#fecdd3}
+.nav-pill.danger:hover{background:var(--rose);color:#fff;border-color:var(--rose)}
+
+/* layout */
+main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 22px 70px;min-height:calc(100vh - 140px)}
+.view{display:none;animation:rise .55s cubic-bezier(.2,.8,.2,1)}
+.view.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+/* LANDING */
+.hero{text-align:center;padding:30px 0 10px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--blue);background:#e7f0ff;padding:7px 16px;border-radius:999px;margin-bottom:22px;
+  border:1px solid var(--line)
+}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{box-shadow:0 0 0 7px rgba(16,185,129,0)}}
+.hero h1{font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.06;font-weight:800;letter-spacing:-1px}
+.hero h1 .grad{background:linear-gradient(120deg,var(--blue),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:620px;margin:18px auto 0;color:var(--slate);font-size:1.08rem;line-height:1.6}
+
+.hero-card{
+  background:linear-gradient(180deg,#ffffff, #f6faff);
+  border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+  max-width:560px;margin:42px auto 0;padding:42px 34px;text-align:center;position:relative;overflow:hidden
+}
+.hero-card::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(56,189,248,.10),transparent);transform:translateX(-100%);animation:sheen 5s infinite}
+@keyframes sheen{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
+.hero-card .badge-ring{
+  width:74px;height:74px;margin:0 auto 16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:2rem;
+  background:radial-gradient(circle at 30% 25%,#dbeafe,#bfdbfe);box-shadow:inset 0 0 0 5px #fff,0 8px 18px -8px rgba(37,99,235,.5)
+}
+.hero-brand{display:flex;flex-direction:column;align-items:center;gap:8px}
+.cspd-big{font-family:'Sora';font-weight:800;font-size:clamp(2.8rem,9vw,3.8rem);line-height:1;letter-spacing:1px;background:linear-gradient(120deg,var(--blue),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
+.by-row{display:flex;align-items:center;gap:9px}
+.by-row .by{font-size:.95rem;color:var(--slate);font-weight:500}
+.hero-card .sub{color:var(--slate);margin-top:12px;font-size:.95rem}
+.btn-stack{display:flex;flex-direction:column;gap:13px;margin-top:30px}
+
+.btn{
+  border:none;cursor:pointer;font-family:'Plus Jakarta Sans';font-weight:700;font-size:1rem;
+  padding:15px 22px;border-radius:14px;transition:.22s cubic-bezier(.2,.8,.2,1);position:relative
+}
+.btn-primary{background:linear-gradient(120deg,var(--blue),var(--blue-soft));color:#fff;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 30px -12px rgba(37,99,235,.6)}
+.btn-ghost{background:#fff;color:var(--blue);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--blue);transform:translateY(-3px);box-shadow:var(--shadow-sm)}
+.btn-line{display:inline-flex;align-items:center;gap:9px;justify-content:center}
+.btn-soft{background:#eef4ff;color:var(--blue)}
+
+/* feature strip */
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px}
+.feature{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow-sm);transition:.25s}
+.feature:hover{transform:translateY(-6px)}
+.feature .ic{font-size:1.6rem;margin-bottom:10px}
+.feature h4{font-size:1.05rem;margin-bottom:6px}
+.feature p{color:var(--slate);font-size:.9rem;line-height:1.5}
+
+/* generic page header */
+.page-head{display:flex;align-items:center;gap:14px;margin-bottom:26px}
+.back{cursor:pointer;background:#fff;border:1px solid var(--line);width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--blue);transition:.2s}
+.back:hover{background:var(--blue);color:#fff}
+.page-head h2{font-size:1.6rem}
+.page-head p{color:var(--slate);font-size:.9rem}
+
+/* FORM */
+.form-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);max-width:660px;margin:0 auto;padding:34px}
+.field{margin-bottom:20px}
+.field label{display:block;font-weight:600;font-size:.9rem;margin-bottom:8px}
+.field label .req{color:var(--rose)}
+.field input,.field textarea,.field select{
+  width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:12px;
+  font-family:inherit;font-size:.95rem;color:var(--ink);background:#fbfdff;transition:.2s
+}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.field textarea{resize:vertical;min-height:120px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.upload{border:2px dashed var(--line);border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:.2s;background:#fbfdff}
+.upload:hover{border-color:var(--blue);background:#f3f8ff}
+.upload .ic{font-size:1.8rem}
+.upload p{color:var(--slate);font-size:.85rem;margin-top:6px}
+.upload small{color:#9aa9c4}
+#photoPreview{max-width:160px;border-radius:12px;margin-top:14px;display:none;box-shadow:var(--shadow-sm)}
+
+/* AI analysing overlay */
+.ai-overlay{position:fixed;inset:0;z-index:100;background:rgba(15,31,61,.45);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.ai-overlay.show{display:flex;animation:rise .3s ease}
+.ai-box{background:#fff;border-radius:22px;max-width:430px;width:100%;padding:32px;box-shadow:var(--shadow);text-align:center}
+.ai-spinner{width:60px;height:60px;margin:0 auto 18px;border-radius:50%;border:5px solid #e7f0ff;border-top-color:var(--blue);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-box h3{font-size:1.2rem;margin-bottom:6px}
+.ai-box .ai-status{color:var(--slate);font-size:.92rem;min-height:22px}
+.ai-result{text-align:left;margin-top:18px;display:none}
+.ai-result .line{display:flex;justify-content:space-between;padding:10px 14px;background:#f6faff;border-radius:10px;margin-bottom:8px;font-size:.9rem;opacity:0;transform:translateX(-10px);animation:slideIn .4s forwards}
+.ai-result .line span:first-child{color:var(--slate)}
+.ai-result .line b{font-weight:700}
+@keyframes slideIn{to{opacity:1;transform:none}}
+
+/* LOGIN */
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);max-width:420px;margin:30px auto 0;padding:36px;text-align:center}
+.login-card .ic-big{width:66px;height:66px;border-radius:18px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:linear-gradient(120deg,#dbeafe,#bae6fd)}
+.login-card h2{font-size:1.4rem}
+.login-card p{color:var(--slate);font-size:.88rem;margin:6px 0 22px}
+.login-card .field{text-align:left}
+.hint{font-size:.78rem;color:#94a3b8;margin-top:14px;line-height:1.5}
+.err{color:var(--rose);font-size:.85rem;margin-top:10px;min-height:18px;font-weight:600}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow-sm);transition:.25s}
+.stat:hover{transform:translateY(-4px)}
+.stat .n{font-family:'Sora';font-size:1.9rem;font-weight:800}
+.stat .l{color:var(--slate);font-size:.82rem;margin-top:2px}
+.stat.blue .n{color:var(--blue)}.stat.amber .n{color:var(--amber)}.stat.green .n{color:var(--green)}.stat.sky .n{color:var(--sky)}
+
+/* workforce alert */
+.alert{background:linear-gradient(120deg,#fff7ed,#fef2f2);border:1px solid #fed7aa;border-left:5px solid var(--amber);border-radius:14px;padding:16px 20px;margin-bottom:22px;display:none;align-items:flex-start;gap:12px;animation:rise .5s}
+.alert.show{display:flex}
+.alert .ic{font-size:1.4rem}
+.alert h4{color:#b45309;font-size:.98rem}
+.alert p{color:#92722f;font-size:.86rem;margin-top:3px}
+.alert-row{background:rgba(255,255,255,.6);border:1px solid #fde0c0;border-radius:11px;padding:11px 13px;margin-top:10px}
+.alert-row .ar-head{font-size:.9rem;color:#7c2d12;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.alert-row .ar-pred{font-size:.84rem;color:#9a3412;margin-top:6px;line-height:1.5}
+.alert-row .ar-act{font-size:.84rem;color:#92722f;margin-top:5px;line-height:1.5}
+
+/* MAIL LAYOUT */
+.mail{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:.8rem;font-weight:600;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--slate);transition:.18s}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.chip:hover{border-color:var(--blue)}
+.inbox{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden;max-height:620px;overflow-y:auto}
+.mail-item{padding:15px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:.18s;position:relative}
+.mail-item:hover{background:#f6faff}
+.mail-item.sel{background:#eef4ff;border-left:4px solid var(--blue)}
+.mail-item .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mail-item .subj{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mail-item .meta{font-size:.78rem;color:var(--slate);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
+.mail-item .preview{font-size:.82rem;color:#8493b0;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:50px 20px;text-align:center;color:#9aa9c4}
+
+.badge{font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+.b-high{background:#ffe4e6;color:#be123c}
+.b-med{background:#fef3c7;color:#b45309}
+.b-low{background:#dcfce7;color:#15803d}
+.b-high.pp{animation:pulseR 1.6s infinite}
+@keyframes pulseR{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,.4)}50%{box-shadow:0 0 0 6px rgba(244,63,94,0)}}
+.b-pending{background:#e0e7ff;color:#4338ca}
+.b-solved{background:#dcfce7;color:#15803d}
+
+/* detail pane */
+.detail{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);padding:26px;min-height:400px}
+.detail .ph{display:flex;flex-direction:column;align-items:center;justify-content:center;height:380px;color:#9aa9c4;text-align:center;gap:10px}
+.detail .ph .ic{font-size:2.6rem}
+.d-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.d-head h3{font-size:1.3rem;line-height:1.3}
+.d-badges{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.d-cell{background:#f6faff;border-radius:12px;padding:12px 14px}
+.d-cell .k{font-size:.74rem;color:var(--slate);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.d-cell .v{font-weight:600;margin-top:3px;font-size:.95rem}
+.d-desc{background:#f6faff;border-radius:12px;padding:16px;line-height:1.6;color:#384b6e;font-size:.94rem;white-space:pre-wrap}
+.d-photo{max-width:100%;border-radius:14px;margin-top:14px;box-shadow:var(--shadow-sm)}
+.assign-box{display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,#eff6ff,#ecfeff);border:1px solid #dbeafe;border-radius:14px;padding:14px 16px;margin:16px 0}
+.assign-box .av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Sora'}
+.assign-box .nm{font-weight:700}
+.assign-box .sk{font-size:.8rem;color:var(--slate)}
+.d-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+
+/* OFFICER PROFILE */
+.profile-hero{background:linear-gradient(120deg,var(--blue),var(--sky));border-radius:22px;padding:30px;color:#fff;display:flex;align-items:center;gap:22px;box-shadow:var(--shadow);margin-bottom:22px;position:relative;overflow:hidden}
+.profile-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.12)}
+.profile-hero .av{width:84px;height:84px;border-radius:22px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:2rem;backdrop-filter:blur(4px)}
+.profile-hero h2{font-size:1.7rem}
+.profile-hero .sk{opacity:.92;margin-top:4px}
+.profile-hero .badge-no{margin-top:8px;font-size:.82rem;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:999px;display:inline-block}
+
+/* officer cards grid (admin overview) */
+.off-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
+.off-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);transition:.25s}
+.off-card:hover{transform:translateY(-5px)}
+.off-card .av{width:46px;height:46px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Sora';margin-bottom:10px}
+.off-card .nm{font-weight:700}
+.off-card .sk{font-size:.82rem;color:var(--slate);margin:2px 0 10px}
+.off-card .load{display:flex;justify-content:space-between;font-size:.8rem;color:var(--slate)}
+.off-card .load b{color:var(--blue)}
+
+.section-title{font-size:1.15rem;margin:30px 0 6px;display:flex;align-items:center;gap:10px}
+.section-title .ln{flex:1;height:1px;background:var(--line)}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:14px 22px;border-radius:14px;font-weight:600;font-size:.9rem;z-index:120;box-shadow:var(--shadow);transition:.4s cubic-bezier(.2,.8,.2,1)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* FOOTER */
+footer{position:relative;z-index:1;background:#0f1f3d;color:#cdd9f0;margin-top:40px;padding:22px 22px}
+.foot-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.foot-cspd{font-family:'Sora';font-weight:800;font-size:1.25rem;background:linear-gradient(120deg,#7dd3fc,#a5b4fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.foot-sep{opacity:.5}
+.foot-logo{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:#cdd9f0;font-size:.9rem;transition:.2s}
+.foot-logo:hover{color:#7dd3fc}
+.foot-logo img{height:22px;border-radius:6px}
+.foot-logo b{font-family:'Sora'}
+.foot-note{text-align:center;font-size:.78rem;opacity:.65;margin-top:10px}
+
+@media(max-width:880px){
+  main{padding:30px 16px 50px}
+  .features{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .mail{grid-template-columns:1fr}
+  .d-grid{grid-template-columns:1fr}
+  .row2{grid-template-columns:1fr}
+  nav{padding:10px 14px}
+  .nav-left .by{display:none}
+  .inbox{max-height:none}
+}
+@media(max-width:560px){
+  nav{flex-wrap:wrap;gap:8px;justify-content:center}
+  .nav-left{flex:1 1 100%;justify-content:center}
+  .nav-right{flex:1 1 100%;justify-content:center;flex-wrap:wrap}
+  .nav-pill{font-size:.76rem;padding:6px 11px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .hero-card{padding:30px 20px;margin-top:30px}
+  .form-card,.login-card,.detail{padding:22px}
+  .off-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .ai-box{padding:24px}
+  .toolbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .profile-hero{flex-direction:column;text-align:center;gap:14px}
+  .page-head h2{font-size:1.35rem}
+}
+@media(max-width:380px){
+  .stats{grid-template-columns:1fr}
+  .cspd-big{font-size:2.5rem}
+}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-left" onclick="go('landing')">
+    <span class="cspd">CSPD</span>
+    <span class="by">by</span>
+    <!-- Replace src below with the Cognospace logo. Click redirects to cognospace.in -->
+    <a class="logo-link" href="https://www.cognospace.in" target="_blank" rel="noopener" title="Cognospace" onclick="event.stopPropagation()">
+      <img src="cognospace-logo.png" alt="Cognospace"
+           onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;logo-fallback&quot;>COGNOSPACE</span>')">
+    </a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-pill" onclick="go('complaint')">Register</span>
+    <span class="nav-pill" onclick="go('adminLogin')">Admin</span>
+    <span class="nav-pill" onclick="go('officerLogin')">Officer</span>
+    <span class="nav-pill danger" onclick="endSession()">⏻ End Session</span>
+  </div>
+</nav>
+
+<main>
+
+<!-- ===== LANDING ===== -->
+<section id="landing" class="view active">
+  <div class="hero">
+    <span class="eyebrow"><span class="dot"></span> AI in Law Enforcement · Learning Demo</span>
+    <h1>Smarter Policing with <span class="grad">Artificial Intelligence</span></h1>
+    <p>See how a modern police department uses AI to read citizen complaints, decide their priority, sort them by area, and route each case to the right officer — automatically.</p>
+  </div>
+
+  <div class="hero-card">
+    <div class="badge-ring">🛡️</div>
+    <div class="hero-brand">
+      <span class="cspd-big">CSPD</span>
+      <div class="by-row">
+        <span class="by">by</span>
+        <a class="logo-link" href="https://www.cognospace.in" target="_blank" rel="noopener" title="Cognospace">
+          <img src="cognospace-logo.png" alt="Cognospace" style="height:34px"
+               onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;logo-fallback&quot; style=&quot;height:34px&quot;>COGNOSPACE</span>')">
+        </a>
+      </div>
+    </div>
+    <p class="sub">City Smart Police Department · Citizen Service Portal</p>
+    <div class="btn-stack">
+      <button class="btn btn-primary btn-line" onclick="go('complaint')">📝 Register a Complaint</button>
+      <button class="btn btn-ghost btn-line" onclick="go('adminLogin')">🛡️ Admin Login</button>
+      <button class="btn btn-ghost btn-line" onclick="go('officerLogin')">👮 Officer Login</button>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature"><div class="ic">🧠</div><h4>AI Priority Engine</h4><p>Reads the subject &amp; description, understands the context, and labels each case High, Medium or Low priority.</p></div>
+    <div class="feature"><div class="ic">🗺️</div><h4>Area Intelligence</h4><p>Groups complaints by locality and alerts command when a zone needs more officers on the ground.</p></div>
+    <div class="feature"><div class="ic">🎯</div><h4>Smart Assignment</h4><p>Matches each complaint to an officer whose skills fit the crime category — no manual sorting.</p></div>
+  </div>
+</section>
+
+<!-- ===== COMPLAINT FORM ===== -->
+<section id="complaint" class="view">
+  <div class="page-head">
+    <div class="back" onclick="go('landing')">←</div>
+    <div><h2>Register a Complaint</h2><p>Your report is analysed by AI and routed to the right officer.</p></div>
+  </div>
+
+  <div class="form-card">
+    <div class="field"><label>Full Name <span class="req">*</span></label><input id="cName" placeholder="e.g. Ravi Sharma"></div>
+    <div class="row2">
+      <div class="field"><label>Area / Locality <span class="req">*</span></label>
+        <select id="cArea">
+          <option value="">Select area…</option>
+          <option>Banjara Hills</option><option>Jubilee Hills</option><option>Gachibowli</option>
+          <option>Madhapur</option><option>Kukatpally</option><option>Secunderabad</option>
+          <option>Ameerpet</option><option>Begumpet</option><option>Hitech City</option>
+          <option>Kondapur</option><option>Miyapur</option><option>LB Nagar</option>
+          <option>Dilsukhnagar</option><option>Uppal</option><option>Mehdipatnam</option>
+          <option>Tolichowki</option><option>Charminar</option><option>Abids</option>
+          <option>Somajiguda</option><option>Manikonda</option><option>Nallagandla</option>
+          <option>Kompally</option><option>Alwal</option><option>Malkajgiri</option>
+        </select>
+      </div>
+      <div class="field"><label>Complaint Subject <span class="req">*</span></label><input id="cSubject" placeholder="e.g. Phone snatched near metro"></div>
+    </div>
+    <div class="field"><label>Description <span class="req">*</span></label>
+      <textarea id="cDesc" placeholder="Describe what happened in detail — what, where, when, and who was involved."></textarea>
+    </div>
+    <div class="field">
+      <label>Add a Photo <small style="color:#94a3b8;font-weight:500">(optional)</small></label>
+      <label class="upload" for="cPhoto">
+        <div class="ic">📷</div>
+        <p><b>Click to upload</b> evidence or scene photo</p>
+        <small>PNG / JPG — auto-compressed for storage</small>
+      </label>
+      <input id="cPhoto" type="file" accept="image/*" hidden onchange="handlePhoto(this)">
+      <img id="photoPreview" alt="preview">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="submitComplaint()">Submit Complaint →</button>
+  </div>
+</section>
+
+<!-- ===== ADMIN LOGIN ===== -->
+<section id="adminLogin" class="view">
+  <div class="page-head"><div class="back" onclick="go('landing')">←</div><div><h2>Admin Login</h2><p>Command &amp; control dashboard.</p></div></div>
+  <div class="login-card">
+    <div class="ic-big">🛡️</div>
+    <h2>Welcome, Commander</h2>
+    <p>Sign in to view all complaints and AI insights</p>
+    <div class="field"><label>Username</label><input id="aUser" placeholder="admin"></div>
+    <div class="field"><label>Password</label><input id="aPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="adminLogin()">Sign In</button>
+    <div class="err" id="aErr"></div>
+    <div class="hint">Demo credentials → <b>admin</b> / <b>admin123</b></div>
+  </div>
+</section>
+
+<!-- ===== OFFICER LOGIN ===== -->
+<section id="officerLogin" class="view">
+  <div class="page-head"><div class="back" onclick="go('landing')">←</div><div><h2>Officer Login</h2><p>Access your assigned cases.</p></div></div>
+  <div class="login-card">
+    <div class="ic-big">👮</div>
+    <h2>Officer Portal</h2>
+    <p>Sign in to view cases assigned to you</p>
+    <div class="field"><label>Username</label><input id="oUser" placeholder="e.g. arjun"></div>
+    <div class="field"><label>Password</label><input id="oPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')officerLogin()"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="officerLogin()">Sign In</button>
+    <div class="err" id="oErr"></div>
+    <div class="hint" id="oHint"></div>
+  </div>
+</section>
+
+<!-- ===== ADMIN DASHBOARD ===== -->
+<section id="admin" class="view">
+  <div class="page-head">
+    <div class="back" onclick="go('landing');adminAuthed=false">←</div>
+    <div style="flex:1"><h2>Command Dashboard</h2><p>AI-classified complaints across the city.</p></div>
+    <button class="btn btn-ghost" onclick="go('landing');adminAuthed=false">Sign out</button>
+  </div>
+
+  <div class="stats" id="adminStats"></div>
+  <div class="alert" id="workforceAlert"></div>
+
+  <div class="toolbar" id="adminFilters"></div>
+
+  <div class="mail">
+    <div class="inbox" id="adminInbox"></div>
+    <div class="detail" id="adminDetail"><div class="ph"><div class="ic">📨</div><div>Select a complaint to see the<br>full AI-analysed case file.</div></div></div>
+  </div>
+
+  <div class="section-title">👮 Officer Workforce <span class="ln"></span></div>
+  <div class="off-grid" id="adminOfficers"></div>
+</section>
+
+<!-- ===== OFFICER DASHBOARD ===== -->
+<section id="officer" class="view">
+  <div class="page-head">
+    <div class="back" onclick="go('landing');currentOfficer=null">←</div>
+    <div style="flex:1"><h2>My Cases</h2><p>Complaints assigned to you by the AI engine.</p></div>
+    <button class="btn btn-ghost" onclick="go('landing');currentOfficer=null">Sign out</button>
+  </div>
+
+  <div class="profile-hero" id="officerHero"></div>
+  <div class="stats" id="officerStats"></div>
+
+  <div class="mail">
+    <div class="inbox" id="officerInbox"></div>
+    <div class="detail" id="officerDetail"><div class="ph"><div class="ic">🗂️</div><div>Select a case to view details.</div></div></div>
+  </div>
+</section>
+
+</main>
+
+<!-- AI ANALYSING OVERLAY -->
+<div class="ai-overlay" id="aiOverlay">
+  <div class="ai-box">
+    <div class="ai-spinner" id="aiSpin"></div>
+    <h3>🤖 AI is analysing your complaint</h3>
+    <div class="ai-status" id="aiStatus">Reading the report…</div>
+    <div class="ai-result" id="aiResult"></div>
+    <button class="btn btn-primary" id="aiDone" style="width:100%;margin-top:18px;display:none" onclick="closeAI()">Got it ✓</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-row">
+    <span class="foot-cspd">CSPD</span>
+    <span class="foot-sep">·</span>
+    <a class="foot-logo" href="https://www.cognospace.in" target="_blank" rel="noopener">
+      by
+      <img src="cognospace-logo.png" alt="Cognospace"
+           onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<b>Cognospace</b>')">
+    </a>
+  </div>
+  <p class="foot-note">© 2026 CSPD Learning Demo · AI in Law Enforcement · For educational use only</p>
+</footer>
+
+<script>
+/* ============ OFFICERS (10 profiles, each with a skill + login) ============ */
+const OFFICERS = [
+  {id:1, name:"Arjun Mehta",  badge:"CSPD-1042", category:"Cybercrime",         skill:"Cybercrime & Online Fraud",     user:"arjun",   pass:"police123", color:"#2563eb"},
+  {id:2, name:"Priya Sharma", badge:"CSPD-1088", category:"Theft",              skill:"Theft, Robbery & Burglary",     user:"priya",   pass:"police123", color:"#0ea5e9"},
+  {id:3, name:"Rajesh Kumar", badge:"CSPD-1120", category:"Traffic",            skill:"Traffic & Road Safety",         user:"rajesh",  pass:"police123", color:"#f59e0b"},
+  {id:4, name:"Sneha Reddy",  badge:"CSPD-1156", category:"Domestic",           skill:"Domestic Violence & Family",    user:"sneha",   pass:"police123", color:"#ec4899"},
+  {id:5, name:"Vikram Singh", badge:"CSPD-1199", category:"Narcotics",          skill:"Narcotics & Substance Abuse",   user:"vikram",  pass:"police123", color:"#16a34a"},
+  {id:6, name:"Ananya Iyer",  badge:"CSPD-1233", category:"Fraud",              skill:"Financial Fraud & Scams",       user:"ananya",  pass:"police123", color:"#8b5cf6"},
+  {id:7, name:"Karthik Nair", badge:"CSPD-1271", category:"PublicDisturbance",  skill:"Public Disturbance & Nuisance", user:"karthik", pass:"police123", color:"#f97316"},
+  {id:8, name:"Meera Joshi",  badge:"CSPD-1305", category:"Missing",            skill:"Missing Persons & Kidnapping",  user:"meera",   pass:"police123", color:"#06b6d4"},
+  {id:9, name:"Suresh Patel", badge:"CSPD-1340", category:"Assault",            skill:"Assault & Violent Crime",       user:"suresh",  pass:"police123", color:"#dc2626"},
+  {id:10,name:"Divya Rao",    badge:"CSPD-1377", category:"Property",           skill:"Property & Land Disputes",      user:"divya",   pass:"police123", color:"#0d9488"},
+];
+
+/* ============ AI CLASSIFIER (keyword/context engine) ============ */
+// Each category has trigger keywords. The engine scores the text and picks the strongest match.
+const CATEGORY_RULES = {
+  Cybercrime:        {label:"Cybercrime",          words:["hack","online","phishing","otp","password","account hacked","social media","facebook","instagram","upi","email","cyber","website","scam call","fake profile","ransom"]},
+  Theft:             {label:"Theft / Burglary",    words:["theft","stolen","steal","snatch","snatched","robbery","robbed","burglary","break-in","broke into","loot","chain snatching","pickpocket","bike stolen","phone snatch"]},
+  Traffic:           {label:"Traffic",             words:["accident","traffic","rash driving","signal","vehicle","car crash","bike crash","hit and run","drunk driving","road","parking","over speed","collision"]},
+  Domestic:          {label:"Domestic Violence",   words:["domestic","husband","wife","in-laws","dowry","beaten at home","family abuse","marital","spouse"]},
+  Narcotics:         {label:"Narcotics",           words:["drugs","narcotics","ganja","cocaine","weed","substance","drug dealer","peddler","selling drugs"]},
+  Fraud:             {label:"Financial Fraud",     words:["fraud","cheated","cheat","money","bank","loan","investment","ponzi","duped","fake job","financial","refund","lottery"]},
+  PublicDisturbance: {label:"Public Disturbance",  words:["noise","loud","disturbance","nuisance","party","music","quarrel","fight in street","public drinking","eve teasing","drunk","abusing"]},
+  Missing:           {label:"Missing Person",      words:["missing","lost child","kidnap","abduct","disappeared","not returned home","trace","runaway"]},
+  Assault:           {label:"Assault / Violence",  words:["assault","attack","attacked","beaten","hit me","violence","stab","knife","weapon","gun","murder","killed","blood","threat to kill","molest","rape"]},
+  Property:          {label:"Property Dispute",    words:["property","land","boundary","encroach","encroachment","dispute","illegal construction","trespass","tenant","eviction"]},
+};
+
+// Words that escalate priority regardless of category
+const HIGH_WORDS = ["murder","killed","kill","blood","weapon","gun","knife","stab","rape","molest","kidnap","abduct","fire","attack","attacked","emergency","unconscious","missing","life","threat to kill","acid","bomb","assault","beaten"];
+const MED_WORDS  = ["theft","stolen","snatch","fraud","cheated","accident","hit and run","robbery","robbed","drugs","narcotics","domestic","harass"];
+
+function classify(subject, desc){
+  const text = (subject + " " + desc).toLowerCase();
+
+  // 1) Category scoring
+  let best = {cat:"PublicDisturbance", score:0};
+  for(const key in CATEGORY_RULES){
+    let score = 0;
+    CATEGORY_RULES[key].words.forEach(w => { if(text.includes(w)) score += (w.includes(" ")?2:1); });
+    if(score > best.score){ best = {cat:key, score}; }
+  }
+  const category = best.cat;
+  const categoryLabel = CATEGORY_RULES[category].label;
+
+  // 2) Priority from context
+  let priority = "Low";
+  if(HIGH_WORDS.some(w => text.includes(w))) priority = "High";
+  else if(MED_WORDS.some(w => text.includes(w))) priority = "Medium";
+  // some categories are inherently serious
+  if(["Assault","Missing","Narcotics","Domestic"].includes(category) && priority==="Low") priority = "Medium";
+
+  // 3) Officer assignment by matching skill (least-loaded among matches)
+  const matches = OFFICERS.filter(o => o.category === category);
+  let officer;
+  if(matches.length){
+    const all = loadComplaints();
+    officer = matches.reduce((a,b)=>{
+      const la = all.filter(c=>c.officerId===a.id && c.status!=="Solved").length;
+      const lb = all.filter(c=>c.officerId===b.id && c.status!=="Solved").length;
+      return lb < la ? b : a;
+    });
+  } else {
+    officer = OFFICERS[6]; // fallback: public disturbance desk
+  }
+
+  return {category, categoryLabel, priority, officer};
+}
+
+/* ============ STORAGE ============ */
+const KEY = "cspd_complaints_v1";
+function loadComplaints(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
+function saveComplaints(arr){ try{ localStorage.setItem(KEY, JSON.stringify(arr)); }catch(e){ toast("Storage full — try a smaller photo"); } }
+
+/* No pre-seeded data. Complaints are created only when a citizen submits the form.
+   They persist across page refresh (localStorage) and are wiped only via "End Session". */
+
+/* ============ NAVIGATION ============ */
+let adminAuthed=false, currentOfficer=null;
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='admin') renderAdmin();
+  if(id==='officer') renderOfficer();
+}
+
+/* ============ PHOTO HANDLING (with compression) ============ */
+let photoData = null;
+function handlePhoto(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const max=800, scale=Math.min(1, max/img.width);
+      const c=document.createElement('canvas');
+      c.width=img.width*scale; c.height=img.height*scale;
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      photoData = c.toDataURL('image/jpeg',0.75);
+      const p=document.getElementById('photoPreview');
+      p.src=photoData; p.style.display='block';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ============ SUBMIT COMPLAINT ============ */
+function submitComplaint(){
+  const name=val('cName'), area=document.getElementById('cArea').value, subject=val('cSubject'), desc=val('cDesc');
+  if(!name||!area||!subject||!desc){ toast("Please fill all required fields"); return; }
+
+  const r = classify(subject, desc);
+  // show AI overlay animation
+  runAIOverlay(r, ()=>{
+    const arr=loadComplaints();
+    arr.unshift({
+      id:Date.now(), name, area, subject, desc, photo:photoData,
+      category:r.category, categoryLabel:r.categoryLabel, priority:r.priority,
+      officerId:r.officer.id, officerName:r.officer.name,
+      status:"Pending", date:new Date().toISOString()
+    });
+    saveComplaints(arr);
+    // reset form
+    ['cName','cSubject','cDesc'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('cArea').value='';
+    document.getElementById('photoPreview').style.display='none';
+    photoData=null;
+  });
+}
+
+function runAIOverlay(r, onDone){
+  const ov=document.getElementById('aiOverlay'), st=document.getElementById('aiStatus'),
+        res=document.getElementById('aiResult'), done=document.getElementById('aiDone'), spin=document.getElementById('aiSpin');
+  ov.classList.add('show'); res.style.display='none'; res.innerHTML=''; done.style.display='none'; spin.style.display='block';
+  const steps=["Reading the report…","Understanding the context…","Detecting crime category…","Calculating priority level…","Finding the right officer…"];
+  let i=0;
+  const t=setInterval(()=>{ st.textContent=steps[i++]; if(i>=steps.length){ clearInterval(t); finish(); } },650);
+  function finish(){
+    spin.style.display='none'; st.textContent="✓ Analysis complete";
+    const pc = r.priority==='High'?'b-high':r.priority==='Medium'?'b-med':'b-low';
+    res.innerHTML=`
+      <div class="line" style="animation-delay:.05s"><span>Category</span><b>${r.categoryLabel}</b></div>
+      <div class="line" style="animation-delay:.15s"><span>Priority</span><span class="badge ${pc}">${r.priority}</span></div>
+      <div class="line" style="animation-delay:.25s"><span>Assigned Officer</span><b>${r.officer.name}</b></div>
+      <div class="line" style="animation-delay:.35s"><span>Skill Match</span><b>${r.officer.skill}</b></div>`;
+    res.style.display='block'; done.style.display='block';
+    onDone();
+  }
+}
+function closeAI(){ document.getElementById('aiOverlay').classList.remove('show'); toast("✓ Complaint registered & routed"); }
+
+/* ============ ADMIN ============ */
+function adminLogin(){
+  const u=val('aUser'), p=val('aPass');
+  if(u==='admin' && p==='admin123'){ adminAuthed=true; document.getElementById('aErr').textContent=''; document.getElementById('aPass').value=''; go('admin'); }
+  else document.getElementById('aErr').textContent="Invalid credentials. Try admin / admin123";
+}
+
+let adminFilter="all";
+function renderAdmin(){
+  if(!adminAuthed){ go('adminLogin'); return; }
+  const all=loadComplaints();
+  // stats
+  const pending=all.filter(c=>c.status!=='Solved').length, solved=all.filter(c=>c.status==='Solved').length;
+  const areas=[...new Set(all.map(c=>c.area))].length;
+  document.getElementById('adminStats').innerHTML=`
+    <div class="stat blue"><div class="n">${all.length}</div><div class="l">Total Complaints</div></div>
+    <div class="stat amber"><div class="n">${pending}</div><div class="l">Pending</div></div>
+    <div class="stat green"><div class="n">${solved}</div><div class="l">Solved</div></div>
+    <div class="stat sky"><div class="n">${areas}</div><div class="l">Areas Affected</div></div>`;
+
+  // workforce alert + AI prediction — per area
+  const active=all.filter(c=>c.status!=='Solved');
+  const areaCount={};
+  active.forEach(c=>areaCount[c.area]=(areaCount[c.area]||0)+1);
+  const hot=Object.entries(areaCount).filter(([a,n])=>n>=3).sort((a,b)=>b[1]-a[1]);
+  const al=document.getElementById('workforceAlert');
+  if(hot.length){
+    al.classList.add('show');
+    const blocks=hot.map(([area,n])=>{
+      // most frequent category in this area => predicted next complaint type
+      const cats={};
+      active.filter(c=>c.area===area).forEach(c=>cats[c.category]=(cats[c.category]||0)+1);
+      const topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0][0];
+      const label=CATEGORY_RULES[topCat]?CATEGORY_RULES[topCat].label:topCat;
+      const off=OFFICERS.find(o=>o.category===topCat)||OFFICERS[6];
+      return `<div class="alert-row">
+        <div class="ar-head"><b>📍 ${area}</b> · ${n} active complaints <span class="badge b-high">Hot zone</span></div>
+        <div class="ar-pred">🔮 <b>AI prediction:</b> cases here are mostly <b>${label}</b> — the next complaint in ${area} is likely to be <b>${label}</b> again.</div>
+        <div class="ar-act">👮 Alerting <b>${off.name}</b> (${off.skill}) to keep <b>keen observation</b> in ${area}, and command to <b>increase the workforce</b> here.</div>
+      </div>`;
+    }).join('');
+    al.innerHTML=`<div class="ic">⚠️</div><div style="flex:1"><h4>High complaint volume — AI workforce advisory</h4>${blocks}</div>`;
+  } else al.classList.remove('show');
+
+  // filters
+  const cats=["all","High","Medium","Low","Pending","Solved"];
+  document.getElementById('adminFilters').innerHTML=cats.map(c=>
+    `<span class="chip ${adminFilter===c?'active':''}" onclick="adminFilter='${c}';renderAdmin()">${c==='all'?'All':c}</span>`).join('');
+
+  // inbox
+  let list=all;
+  if(['High','Medium','Low'].includes(adminFilter)) list=all.filter(c=>c.priority===adminFilter);
+  if(adminFilter==='Pending') list=all.filter(c=>c.status!=='Solved');
+  if(adminFilter==='Solved') list=all.filter(c=>c.status==='Solved');
+
+  const inbox=document.getElementById('adminInbox');
+  inbox.innerHTML = list.length ? list.map(c=>mailItem(c,'admin')).join('') :
+    `<div class="empty">📭<br>No complaints here.</div>`;
+
+  // officers workforce grid
+  document.getElementById('adminOfficers').innerHTML=OFFICERS.map(o=>{
+    const load=all.filter(c=>c.officerId===o.id && c.status!=='Solved').length;
+    const tot=all.filter(c=>c.officerId===o.id).length;
+    return `<div class="off-card">
+      <div class="av" style="background:${o.color}">${initials(o.name)}</div>
+      <div class="nm">${o.name}</div><div class="sk">${o.skill}</div>
+      <div class="load"><span>Active: <b>${load}</b></span><span>Total: ${tot}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function mailItem(c, ctx){
+  const pc=c.priority==='High'?'b-high pp':c.priority==='Medium'?'b-med':'b-low';
+  const sc=c.status==='Solved'?'b-solved':'b-pending';
+  return `<div class="mail-item ${selectedId===c.id?'sel':''}" onclick="openCase(${c.id},'${ctx}')">
+    <div class="top"><span class="subj">${esc(c.subject)}</span><span class="badge ${pc}">${c.priority}</span></div>
+    <div class="meta"><span>👤 ${esc(c.name)}</span><span>📍 ${c.area}</span><span class="badge ${sc}">${c.status}</span></div>
+    <div class="preview">${esc(c.desc)}</div>
+  </div>`;
+}
+
+let selectedId=null, selectedCtx='admin';
+function openCase(id, ctx){
+  selectedId=id; selectedCtx=ctx;
+  const c=loadComplaints().find(x=>x.id===id); if(!c) return;
+  const off=OFFICERS.find(o=>o.id===c.officerId)||{name:c.officerName,skill:'—',color:'#64748b'};
+  const pc=c.priority==='High'?'b-high':c.priority==='Medium'?'b-med':'b-low';
+  const sc=c.status==='Solved'?'b-solved':'b-pending';
+  const target = ctx==='admin'?'adminDetail':'officerDetail';
+  document.getElementById(target).innerHTML=`
+    <div class="d-head">
+      <div><h3>${esc(c.subject)}</h3><div style="color:var(--slate);font-size:.84rem;margin-top:4px">${new Date(c.date).toLocaleString()}</div></div>
+      <span class="badge ${sc}">${c.status}</span>
+    </div>
+    <div class="d-badges">
+      <span class="badge ${pc}">${c.priority} Priority</span>
+      <span class="badge b-pending">🏷️ ${c.categoryLabel}</span>
+      <span class="badge b-low">📍 ${c.area}</span>
+    </div>
+    <div class="assign-box">
+      <div class="av" style="background:${off.color}">${initials(off.name)}</div>
+      <div><div class="nm">Assigned to ${off.name}</div><div class="sk">${off.skill}</div></div>
+    </div>
+    <div class="d-grid">
+      <div class="d-cell"><div class="k">Complainant</div><div class="v">${esc(c.name)}</div></div>
+      <div class="d-cell"><div class="k">Area</div><div class="v">${c.area}</div></div>
+    </div>
+    <div class="d-cell" style="margin-bottom:14px"><div class="k">Description (as sent by citizen)</div></div>
+    <div class="d-desc">${esc(c.desc)}</div>
+    ${c.photo?`<img class="d-photo" src="${c.photo}" alt="evidence">`:`<p style="color:#9aa9c4;font-size:.85rem;margin-top:12px">📷 No photo attached.</p>`}
+    <div class="d-actions">
+      ${c.status==='Solved'
+        ? `<button class="btn btn-soft" onclick="setStatus(${c.id},'Pending')">↩ Reopen Case</button>`
+        : `<button class="btn btn-primary" onclick="setStatus(${c.id},'Solved')">✓ Mark as Solved</button>`}
+    </div>`;
+  if(ctx==='admin') renderAdmin(); else renderOfficer();
+  // keep selection highlight after re-render
+  selectedId=id;
+  if(ctx==='admin'){ openCaseDetailOnly(id,'adminDetail'); } else { openCaseDetailOnly(id,'officerDetail'); }
+}
+function openCaseDetailOnly(id,target){ /* detail already rendered above; re-highlight handled by sel class */ }
+
+function setStatus(id, status){
+  const arr=loadComplaints(); const c=arr.find(x=>x.id===id); if(!c) return;
+  c.status=status; saveComplaints(arr);
+  toast(status==='Solved'?"✓ Case marked solved":"Case reopened");
+  openCase(id, selectedCtx);
+}
+
+/* ============ OFFICER ============ */
+function officerLogin(){
+  const u=val('oUser').toLowerCase(), p=val('oPass');
+  const o=OFFICERS.find(x=>x.user===u && x.pass===p);
+  if(o){ currentOfficer=o; document.getElementById('oErr').textContent=''; document.getElementById('oPass').value=''; go('officer'); }
+  else document.getElementById('oErr').textContent="Invalid credentials. See hint below.";
+}
+
+function renderOfficer(){
+  if(!currentOfficer){ go('officerLogin'); return; }
+  const o=currentOfficer, all=loadComplaints().filter(c=>c.officerId===o.id);
+  const pending=all.filter(c=>c.status!=='Solved').length, solved=all.filter(c=>c.status==='Solved').length;
+  const high=all.filter(c=>c.priority==='High' && c.status!=='Solved').length;
+
+  document.getElementById('officerHero').innerHTML=`
+    <div class="av">${initials(o.name)}</div>
+    <div><h2>${o.name}</h2><div class="sk">${o.skill}</div><span class="badge-no">🪪 ${o.badge}</span></div>`;
+  document.getElementById('officerStats').innerHTML=`
+    <div class="stat blue"><div class="n">${all.length}</div><div class="l">Assigned to me</div></div>
+    <div class="stat amber"><div class="n">${pending}</div><div class="l">Pending</div></div>
+    <div class="stat green"><div class="n">${solved}</div><div class="l">Solved</div></div>
+    <div class="stat sky"><div class="n">${high}</div><div class="l">High priority</div></div>`;
+
+  const inbox=document.getElementById('officerInbox');
+  inbox.innerHTML = all.length ? all.map(c=>mailItem(c,'officer')).join('') :
+    `<div class="empty">✅<br>No cases assigned yet.</div>`;
+}
+
+/* ============ HELPERS ============ */
+function val(id){ return document.getElementById(id).value.trim(); }
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function esc(s){ return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
+function endSession(){
+  if(confirm("End session? This will permanently wipe ALL complaints and data.")){
+    localStorage.removeItem(KEY);
+    adminAuthed=false; currentOfficer=null; selectedId=null;
+    go('landing');
+    toast("🗑️ Session ended — all data wiped");
+  }
+}
+
+// officer login hint
+document.getElementById('oHint').innerHTML =
+  "Demo logins → <b>arjun, priya, rajesh, sneha, vikram, ananya, karthik, meera, suresh, divya</b><br>Password for all: <b>police123</b>";
+</script>
+</body>
+</html>
