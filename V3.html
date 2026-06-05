@@ -341,16 +341,6 @@ footer{position:relative;z-index:1;background:#0f1f3d;color:#cdd9f0;margin-top:4
 .foot-logo b{font-family:'Sora'}
 .foot-note{text-align:center;font-size:.78rem;opacity:.65;margin-top:10px}
 
-/* CONFIRM MODAL */
-.confirm-modal{position:fixed;inset:0;z-index:300;background:rgba(15,31,61,.55);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
-.confirm-modal.show{display:flex;animation:rise .25s ease}
-.confirm-box{background:#fff;border-radius:24px;max-width:420px;width:100%;padding:36px 32px;box-shadow:0 32px 64px -16px rgba(15,31,61,.4);border:1px solid var(--line);text-align:center}
-.confirm-box .cb-icon{width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg,#fff1f2,#fecdd3);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 18px;box-shadow:0 8px 20px -8px rgba(244,63,94,.3)}
-.confirm-box h3{font-size:1.25rem;margin-bottom:8px;color:var(--ink)}
-.confirm-box p{color:var(--slate);font-size:.92rem;line-height:1.6;margin-bottom:26px}
-.confirm-actions{display:flex;gap:12px;justify-content:center}
-.confirm-actions .btn{min-width:120px;padding:13px 20px}
-
 /* CAMERA MODAL */
 .cam-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .cam-modal.show{display:flex}
@@ -577,10 +567,21 @@ select.priority-select.psel-Low{background:linear-gradient(120deg,#f0fdf4,#dcfce
   <div class="form-card">
     <div class="field"><label>Full Name <span class="req">*</span></label><input id="cName" placeholder="e.g. Ravi Sharma"></div>
     <div class="row2">
-      <div class="field"><label>City <span class="req">*</span></label><input id="cCity" placeholder="e.g. Hyderabad"></div>
-      <div class="field"><label>Area / Locality <span class="req">*</span></label><input id="cArea" placeholder="e.g. Gachibowli"></div>
+      <div class="field"><label>Area / Locality <span class="req">*</span></label>
+        <select id="cArea">
+          <option value="">Select area…</option>
+          <option>Banjara Hills</option><option>Jubilee Hills</option><option>Gachibowli</option>
+          <option>Madhapur</option><option>Kukatpally</option><option>Secunderabad</option>
+          <option>Ameerpet</option><option>Begumpet</option><option>Hitech City</option>
+          <option>Kondapur</option><option>Miyapur</option><option>LB Nagar</option>
+          <option>Dilsukhnagar</option><option>Uppal</option><option>Mehdipatnam</option>
+          <option>Tolichowki</option><option>Charminar</option><option>Abids</option>
+          <option>Somajiguda</option><option>Manikonda</option><option>Nallagandla</option>
+          <option>Kompally</option><option>Alwal</option><option>Malkajgiri</option>
+        </select>
+      </div>
+      <div class="field"><label>Complaint Subject <span class="req">*</span></label><input id="cSubject" placeholder="e.g. Phone snatched near metro"></div>
     </div>
-    <div class="field"><label>Complaint Subject <span class="req">*</span></label><input id="cSubject" placeholder="e.g. Phone snatched near metro"></div>
     <div class="field"><label>Description <span class="req">*</span></label>
       <textarea id="cDesc" placeholder="Describe what happened in detail — what, where, when, and who was involved."></textarea>
     </div>
@@ -686,19 +687,6 @@ select.priority-select.psel-Low{background:linear-gradient(120deg,#f0fdf4,#dcfce
     <div class="ai-status" id="aiStatus">Reading the report…</div>
     <div class="ai-result" id="aiResult"></div>
     <button class="btn btn-primary" id="aiDone" style="width:100%;margin-top:18px;display:none" onclick="closeAI()">Got it ✓</button>
-  </div>
-</div>
-
-<!-- CONFIRM END SESSION MODAL -->
-<div class="confirm-modal" id="confirmModal">
-  <div class="confirm-box">
-    <div class="cb-icon">⏻</div>
-    <h3>End Session?</h3>
-    <p>This will permanently wipe <strong>all complaints, officers, and rules</strong> from this device. This cannot be undone.</p>
-    <div class="confirm-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('confirmModal').classList.remove('show')">Cancel</button>
-      <button class="btn btn-danger btn-line" onclick="confirmEndSession()">⏻ End Session</button>
-    </div>
   </div>
 </div>
 
@@ -1437,20 +1425,20 @@ The JSON must have exactly these fields:
    ================================================================ */
 function submitComplaint(){
   if(!isAppTrained()){ document.getElementById('blockedOverlay').classList.add('show'); go('landing'); return; }
-  const name=val('cName'), city=val('cCity'), area=val('cArea'), subject=val('cSubject'), desc=val('cDesc');
-  if(!name||!city||!area||!subject||!desc){ toast("Please fill all required fields"); return; }
-  const fullArea = `${area}, ${city}`;
+  const name=val('cName'), area=document.getElementById('cArea').value, subject=val('cSubject'), desc=val('cDesc');
+  if(!name||!area||!subject||!desc){ toast("Please fill all required fields"); return; }
   const r = classify(subject, desc);
   runAIOverlay(r, ()=>{
     const arr=loadComplaints();
     arr.unshift({
-      id:Date.now(), name, city, area, fullArea, subject, desc, photo:photoData,
+      id:Date.now(), name, area, subject, desc, photo:photoData,
       category:r.category, categoryLabel:r.categoryLabel, priority:r.priority,
       officerId:r.officer.id, officerName:r.officer.name,
       status:"Pending", date:new Date().toISOString()
     });
     saveComplaints(arr);
-    ['cName','cCity','cArea','cSubject','cDesc'].forEach(i=>document.getElementById(i).value='');
+    ['cName','cSubject','cDesc'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('cArea').value='';
     document.getElementById('photoPreview').style.display='none';
     document.getElementById('imgAnalysis').classList.remove('show');
     photoData=null;
@@ -1495,7 +1483,7 @@ function renderAdmin(){
   const all=loadComplaints();
   const officers=getOfficers();
   const pending=all.filter(c=>c.status!=='Solved').length, solved=all.filter(c=>c.status==='Solved').length;
-  const areas=[...new Set(all.map(c=>c.fullArea||c.area))].length;
+  const areas=[...new Set(all.map(c=>c.area))].length;
   document.getElementById('adminStats').innerHTML=`
     <div class="stat blue"><div class="n">${all.length}</div><div class="l">Total Complaints</div></div>
     <div class="stat amber"><div class="n">${pending}</div><div class="l">Pending</div></div>
@@ -1504,21 +1492,22 @@ function renderAdmin(){
 
   const active=all.filter(c=>c.status!=='Solved');
   const areaCount={};
-  active.forEach(c=>{ const k=c.fullArea||c.area; areaCount[k]=(areaCount[k]||0)+1; });
+  active.forEach(c=>areaCount[c.area]=(areaCount[c.area]||0)+1);
   const hot=Object.entries(areaCount).filter(([a,n])=>n>=3).sort((a,b)=>b[1]-a[1]);
   const al=document.getElementById('workforceAlert');
   if(hot.length){
     al.classList.add('show');
+    const rules=getRules();
     const blocks=hot.map(([area,n])=>{
       const cats={};
-      active.filter(c=>(c.fullArea||c.area)===area).forEach(c=>cats[c.category]=(cats[c.category]||0)+1);
+      active.filter(c=>c.area===area).forEach(c=>cats[c.category]=(cats[c.category]||0)+1);
       const topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0][0];
       const des=DESIGNATIONS.find(d=>d.key===topCat)||{label:topCat,icon:'📋'};
       const off=officers.find(o=>o.designation===topCat)||officers[0]||{name:'Officer',skill:'General'};
       return `<div class="alert-row">
-        <div class="ar-head"><b>📍 ${esc(area)}</b> · ${n} active complaints <span class="badge b-high">Hot zone</span></div>
-        <div class="ar-pred">🔮 <b>AI prediction:</b> cases here are mostly <b>${des.icon} ${des.label}</b> — next complaint in ${esc(area)} likely to be similar.</div>
-        <div class="ar-act">👮 Alerting <b>${esc(off.name)}</b> (${esc(off.skill)}) to keep keen observation in ${esc(area)} and increase workforce here.</div>
+        <div class="ar-head"><b>📍 ${area}</b> · ${n} active complaints <span class="badge b-high">Hot zone</span></div>
+        <div class="ar-pred">🔮 <b>AI prediction:</b> cases here are mostly <b>${des.icon} ${des.label}</b> — next complaint in ${area} likely to be similar.</div>
+        <div class="ar-act">👮 Alerting <b>${esc(off.name)}</b> (${esc(off.skill)}) to keep keen observation in ${area} and increase workforce here.</div>
       </div>`;
     }).join('');
     al.innerHTML=`<div class="ic">⚠️</div><div style="flex:1"><h4>High complaint volume — AI workforce advisory</h4>${blocks}</div>`;
@@ -1554,7 +1543,7 @@ function mailItem(c, ctx){
   const sc=c.status==='Solved'?'b-solved':'b-pending';
   return `<div class="mail-item ${selectedId===c.id?'sel':''}" onclick="openCase(${c.id},'${ctx}')">
     <div class="top"><span class="subj">${esc(c.subject)}</span><span class="badge ${pc}">${c.priority}</span></div>
-    <div class="meta"><span>👤 ${esc(c.name)}</span><span>📍 ${esc(c.fullArea||c.area)}</span><span class="badge ${sc}">${c.status}</span></div>
+    <div class="meta"><span>👤 ${esc(c.name)}</span><span>📍 ${c.area}</span><span class="badge ${sc}">${c.status}</span></div>
     <div class="preview">${esc(c.desc)}</div>
   </div>`;
 }
@@ -1576,7 +1565,7 @@ function openCase(id, ctx){
     <div class="d-badges">
       <span class="badge ${pc}">${c.priority} Priority</span>
       <span class="badge b-pending">🏷️ ${esc(c.categoryLabel)}</span>
-      <span class="badge b-low">📍 ${esc(c.fullArea||c.area)}</span>
+      <span class="badge b-low">📍 ${c.area}</span>
     </div>
     <div class="assign-box">
       <div class="av" style="background:${off.color}">${initials(off.name)}</div>
@@ -1584,8 +1573,7 @@ function openCase(id, ctx){
     </div>
     <div class="d-grid">
       <div class="d-cell"><div class="k">Complainant</div><div class="v">${esc(c.name)}</div></div>
-      <div class="d-cell"><div class="k">City</div><div class="v">${esc(c.city||'—')}</div></div>
-      <div class="d-cell"><div class="k">Area / Locality</div><div class="v">${esc(c.area||'—')}</div></div>
+      <div class="d-cell"><div class="k">Area</div><div class="v">${c.area}</div></div>
     </div>
     <div class="d-cell" style="margin-bottom:14px"><div class="k">Description</div></div>
     <div class="d-desc">${esc(c.desc)}</div>
@@ -1655,16 +1643,13 @@ function updateOfficerHint(){
 }
 
 function endSession(){
-  document.getElementById('confirmModal').classList.add('show');
-}
-
-function confirmEndSession(){
-  document.getElementById('confirmModal').classList.remove('show');
-  Object.values(KEYS).forEach(k=>sessionStorage.removeItem(k));
-  adminAuthed=false; currentOfficer=null; selectedId=null; photoData=null;
-  go('landing');
-  renderLandingStatus();
-  toast("🗑️ Session ended — all data wiped");
+  if(confirm("End session? This will permanently wipe ALL complaints, officers, and rules from this device.")){
+    Object.values(KEYS).forEach(k=>sessionStorage.removeItem(k));
+    adminAuthed=false; currentOfficer=null; selectedId=null; photoData=null;
+    go('landing');
+    renderLandingStatus();
+    toast("🗑️ Session ended — all data wiped");
+  }
 }
 
 /* ================================================================
